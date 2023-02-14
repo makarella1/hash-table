@@ -2,7 +2,7 @@
 #include <random>
 #include <string>
 #include <cstdlib>
-#include "jedi.h"
+#include "jedi.cpp"
 
 const long long MIN_13_DIGIT_NUM = 1000000000000;
 const long long MAX_13_DIGIT_NUM = 9999999999999;
