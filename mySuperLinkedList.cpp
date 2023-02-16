@@ -1,12 +1,6 @@
 #include <iostream>
 #include "mySuperLinkedList.h"
-#include "jedi.h"
-
-Node::Node(Jedi jedi)
-{
-  jedi = jedi;
-  next = nullptr;
-}
+#include "hashNode.h"
 
 MySuperLinkedList::MySuperLinkedList()
 {
@@ -19,9 +13,9 @@ bool MySuperLinkedList::isEmpty()
   return head == nullptr;
 }
 
-void MySuperLinkedList::pushFront(Jedi jedi)
+void MySuperLinkedList::pushFront(HashNode hashNode)
 {
-  Node *newHead = new Node(jedi);
+  HashNode *newHead = new HashNode(hashNode);
 
   newHead->next = head;
 
@@ -30,17 +24,17 @@ void MySuperLinkedList::pushFront(Jedi jedi)
   ++size;
 }
 
-void MySuperLinkedList::pushBack(Jedi jedi)
+void MySuperLinkedList::pushBack(HashNode &hashNode)
 {
   if (isEmpty())
   {
-    head = new Node(jedi);
+    head = new HashNode(hashNode);
   }
   else
   {
-    Node *newTail = new Node(jedi);
+    HashNode *newTail = new HashNode(hashNode);
 
-    Node *current = head;
+    HashNode *current = head;
 
     while (current->next != nullptr)
     {
@@ -48,11 +42,12 @@ void MySuperLinkedList::pushBack(Jedi jedi)
     }
 
     current->next = newTail;
+    newTail->next = nullptr;
   }
   ++size;
 }
 
-Jedi MySuperLinkedList::get(int index)
+HashNode MySuperLinkedList::get(int index)
 {
   if (index <= 0 && index > size)
   {
@@ -60,17 +55,17 @@ Jedi MySuperLinkedList::get(int index)
     exit(1);
   }
 
-  Node *current = head;
+  HashNode *current = head;
 
   for (int i = 0; i < index; i++)
   {
     current = current->next;
   }
 
-  return current->jedi;
+  return *current;
 }
 
-Jedi MySuperLinkedList::popFront()
+HashNode MySuperLinkedList::popFront()
 {
   if (isEmpty())
   {
@@ -78,20 +73,19 @@ Jedi MySuperLinkedList::popFront()
     exit(1);
   }
 
-  Node *newHead = head->next;
+  HashNode *oldHead = head;
+  HashNode result = *head;
 
-  Jedi headData = head->jedi;
+  head = head->next;
 
-  delete head;
-
-  head = newHead;
+  delete oldHead;
 
   --size;
 
-  return headData;
+  return result;
 }
 
-Jedi MySuperLinkedList::popBack()
+HashNode MySuperLinkedList::popBack()
 {
   if (isEmpty())
   {
@@ -100,31 +94,24 @@ Jedi MySuperLinkedList::popBack()
   }
   else if (head->next == nullptr)
   {
-    Jedi headData = head->jedi;
-
-    delete head;
-
-    head = nullptr;
-
-    return headData;
+    return popFront();
   }
 
-  Node *current = head;
+  HashNode *current = head;
 
   while (current->next->next != nullptr)
   {
     current = current->next;
   }
 
-  Jedi lastData = current->next->jedi;
+  HashNode result = *(current->next);
 
   delete current->next;
-
   current->next = nullptr;
 
   --size;
 
-  return lastData;
+  return result;
 }
 
 int MySuperLinkedList::getSize()
@@ -134,7 +121,7 @@ int MySuperLinkedList::getSize()
 
 void MySuperLinkedList::print()
 {
-  Node *current = head;
+  HashNode *current = head;
 
   while (current != nullptr)
   {

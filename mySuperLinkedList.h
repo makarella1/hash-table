@@ -1,34 +1,27 @@
 #pragma once
 
-#include "jedi.h"
-
-struct Node
-{
-  Jedi jedi;
-  Node *next;
-
-  Node(Jedi jedi);
-};
+#include "hashNode.h"
 
 struct MySuperLinkedList
 {
 private:
-  Node *head;
   int size;
   bool isEmpty();
 
 public:
   MySuperLinkedList();
 
-  void pushFront(Jedi jedi);
+  HashNode *head;
 
-  void pushBack(Jedi jedi);
+  void pushFront(HashNode hashNode);
 
-  Jedi get(int index);
+  void pushBack(HashNode &hashNode);
 
-  Jedi popFront();
+  HashNode get(int index);
 
-  Jedi popBack();
+  HashNode popFront();
+
+  HashNode popBack();
 
   int getSize();
 
