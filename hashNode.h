@@ -9,5 +9,10 @@ struct HashNode
   Key key;
   HashNode *next;
 
-  HashNode(Key key, Jedi jedi);
+  HashNode(Key key, Jedi jedi)
+  {
+    this->jedi = jedi;
+    this->key = key;
+    next = nullptr;
+  };
 };
