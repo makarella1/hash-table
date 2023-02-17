@@ -2,6 +2,7 @@
 
 #include "hashNode.h"
 
+template <typename Key>
 struct MySuperLinkedList
 {
 private:
@@ -11,17 +12,17 @@ private:
 public:
   MySuperLinkedList();
 
-  HashNode *head;
+  HashNode<Key> *head;
 
-  void pushFront(HashNode hashNode);
+  void pushFront(HashNode<Key> hashNode);
 
-  void pushBack(HashNode &hashNode);
+  void pushBack(HashNode<Key> &hashNode);
 
-  HashNode get(int index);
+  HashNode<Key> get(int index);
 
-  HashNode popFront();
+  HashNode<Key> popFront();
 
-  HashNode popBack();
+  HashNode<Key> popBack();
 
   int getSize();
 

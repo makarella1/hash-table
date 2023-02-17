@@ -2,15 +2,16 @@
 #include <string>
 #include <random>
 #include "jedi.h"
-#include "mySuperLinkedList.h"
 #include "hashNode.h"
+#include "mySuperLinkedList.h"
 #include <unordered_map>
 
 const int LOAD_FACTOR = 9;
+template <typename Key>
 struct HashTable
 {
 private:
-  MySuperLinkedList *buckets;
+  MySuperLinkedList<Key> *buckets;
 
   int size;
 
@@ -19,6 +20,16 @@ private:
   int hash(int key)
   {
     return key % bucketsLength;
+  }
+
+  int hash(std::string key)
+  {
+    int hash = 0;
+    for (char c : key)
+    {
+      hash += static_cast<int>(c);
+    }
+    return hash % bucketsLength;
   }
 
   double loadFactor()
@@ -30,15 +41,15 @@ private:
   {
     int newLength = bucketsLength * 2;
 
-    MySuperLinkedList *newBuckets = new MySuperLinkedList[newLength];
+    MySuperLinkedList<Key> *newBuckets = new MySuperLinkedList<Key>[newLength];
 
     for (int i = 0; i < bucketsLength; i++)
     {
-      HashNode *current = buckets[i].head;
+      HashNode<Key> *current = buckets[i].head;
 
       while (current != nullptr)
       {
-        HashNode *newNode = new HashNode(current->key, current->jedi);
+        HashNode<Key> *newNode = new HashNode<Key>(current->key, current->jedi);
 
         newBuckets[hash(current->key)].pushBack(*newNode);
         current = current->next;
@@ -56,10 +67,10 @@ public:
   {
     size = 0;
     bucketsLength = 8;
-    buckets = new MySuperLinkedList[bucketsLength];
+    buckets = new MySuperLinkedList<Key>[bucketsLength];
   }
 
-  void insert(int key, Jedi &jedi)
+  void insert(Key key, Jedi &jedi)
   {
     if (loadFactor() >= LOAD_FACTOR)
     {
@@ -68,7 +79,7 @@ public:
 
     int index = hash(key);
 
-    HashNode *current = buckets[index].head;
+    HashNode<Key> *current = buckets[index].head;
 
     while (current != nullptr)
     {
@@ -80,15 +91,15 @@ public:
       current = current->next;
     }
 
-    HashNode *newNode = new HashNode(key, jedi);
+    HashNode<Key> *newNode = new HashNode<Key>(key, jedi);
     buckets[index].pushBack(*newNode);
     ++size;
   }
 
-  Jedi *find(int key)
+  Jedi *find(Key key)
   {
     int index = hash(key);
-    HashNode *current = buckets[index].head;
+    HashNode<Key> *current = buckets[index].head;
 
     while (current != nullptr)
     {
@@ -103,12 +114,12 @@ public:
     return NULL;
   }
 
-  void erase(int key)
+  void erase(Key key)
   {
     int index = hash(key);
 
-    HashNode *current = buckets[index].head;
-    HashNode *prev = nullptr;
+    HashNode<Key> *current = buckets[index].head;
+    HashNode<Key> *prev = nullptr;
 
     while (current != nullptr)
     {
@@ -116,7 +127,6 @@ public:
       {
         if (prev == nullptr)
         {
-          // The node to be deleted is the head of the list
           buckets[index].popFront();
         }
         else
@@ -139,24 +149,6 @@ public:
   }
 };
 
-struct StringKeyHashTable : public HashTable
-{
-private:
-  unsigned long hash(std::string str)
-  {
-    const unsigned long fnvPrime = 1099511628211;
-    unsigned long hashValue = 14695981039346656037UL;
-
-    for (char c : str)
-    {
-      hashValue ^= static_cast<unsigned long>(c);
-      hashValue *= fnvPrime;
-    }
-
-    return hashValue;
-  }
-};
-
 long long
 generateRandLong(int keysAmount)
 {
@@ -169,6 +161,18 @@ generateRandLong(int keysAmount)
 
 int main()
 {
+  Jedi jedi = Jedi();
+
+  std::cout << jedi.name;
+
+  HashTable<std::string> stringHashTable;
+
+  stringHashTable.insert(jedi.name, jedi);
+
+  Jedi *found = stringHashTable.find(jedi.name);
+
+  std::cout << found->name;
+
   // Jedi jedi1 = Jedi();
   // Jedi jedi2 = Jedi();
   // Jedi jedi3 = Jedi();
@@ -187,109 +191,88 @@ int main()
 
   // std::cout << found->name;
 
-  const int iters = 500000;
-  const int keysAmount = iters * 1;
+  // const int iters = 500000;
+  // const int keysAmount = iters * 1;
 
-  long long *keys = new long long[keysAmount];
-  long long *keysToInsert = new long long[iters];
-  long long *keysToErase = new long long[iters];
-  long long *keysToFind = new long long[iters];
-  for (int i = 0; i < keysAmount; i++)
-  {
-    keys[i] = generateRandLong(keysAmount);
-  }
-  for (int i = 0; i < iters; i++)
-  {
-    keysToInsert[i] = keys[generateRandLong(keysAmount)];
-    keysToErase[i] = keys[generateRandLong(keysAmount)];
-    keysToFind[i] = keys[generateRandLong(keysAmount)];
-  }
-
-  HashTable hashTable;
-
-  clock_t myStart = clock();
-  for (int i = 0; i < iters; i++)
-  {
-    Jedi jedi = Jedi();
-
-    hashTable.insert(keysToInsert[i], jedi);
-  }
-  int myInsertSize = hashTable.getSize();
-  for (int i = 0; i < iters; i++)
-  {
-    hashTable.erase(keysToErase[i]);
-  }
-  int myEraseSize = hashTable.getSize();
-  int myFoundAmount = 0;
-  for (int i = 0; i < iters; i++)
-  {
-    if (hashTable.find(keysToFind[i]) != nullptr)
-    {
-      myFoundAmount++;
-    }
-  }
-  clock_t myEnd = clock();
-  float myTime = (float(myEnd - myStart)) / CLOCKS_PER_SEC;
-
-  // test STL hash table:
-  std::unordered_map<long long, Jedi> unorderedMap;
-  clock_t stlStart = clock();
-  for (int i = 0; i < iters; i++)
-  {
-    Jedi jedi = Jedi();
-    unorderedMap.insert({keysToInsert[i], jedi});
-  }
-  int stlInsertSize = unorderedMap.size();
-  for (int i = 0; i < iters; i++)
-  {
-    unorderedMap.erase(keysToErase[i]);
-  }
-  int stlEraseSize = unorderedMap.size();
-  int stlFoundAmount = 0;
-  for (int i = 0; i < iters; i++)
-  {
-    if (unorderedMap.find(keysToFind[i]) != unorderedMap.end())
-    {
-      stlFoundAmount++;
-    }
-  }
-  clock_t stlEnd = clock();
-  float stlTime = (float(stlEnd - stlStart)) / CLOCKS_PER_SEC;
-
-  std::cout << "My HashTable:" << std::endl;
-  std::cout << "Time: " << myTime << ", size: " << myInsertSize << " - " << myEraseSize << ", found amount: " << myFoundAmount << std::endl;
-  std::cout << "STL unordered_map:" << std::endl;
-  std::cout << "Time: " << stlTime << ", size: " << stlInsertSize << " - " << stlEraseSize << ", found amount: " << stlFoundAmount << std::endl
-            << std::endl;
-  delete keys;
-  delete keysToInsert;
-  delete keysToErase;
-  delete keysToFind;
-  if (myInsertSize == stlInsertSize && myEraseSize == stlEraseSize && myFoundAmount == stlFoundAmount)
-  {
-    std::cout << "The lab is completed" << std::endl;
-    return true;
-  }
-  std::cerr << ":(" << std::endl;
-
-  //   HashTable table;
-
-  // for (int i = 1; i <= 500000; i++)
+  // long long *keys = new long long[keysAmount];
+  // long long *keysToInsert = new long long[iters];
+  // long long *keysToErase = new long long[iters];
+  // long long *keysToFind = new long long[iters];
+  // for (int i = 0; i < keysAmount; i++)
   // {
-  //   Jedi jedi = Jedi();
-  //   if (i == 100)
-  //   {
-  //     std::cout << jedi.name << std::endl;
-
-  //     table.insert(i, jedi);
-  //   }
-  //   else
-  //   {
-  //     table.insert(i, jedi);
-  //   }
+  //   keys[i] = generateRandLong(keysAmount);
+  // }
+  // for (int i = 0; i < iters; i++)
+  // {
+  //   keysToInsert[i] = keys[generateRandLong(keysAmount)];
+  //   keysToErase[i] = keys[generateRandLong(keysAmount)];
+  //   keysToFind[i] = keys[generateRandLong(keysAmount)];
   // }
 
-  // Jedi *found = table.find(100);
+  // HashTable hashTable;
 
-  // std::cout << found->name;
+  // clock_t myStart = clock();
+  // for (int i = 0; i < iters; i++)
+  // {
+  //   Jedi jedi = Jedi();
+
+  //   hashTable.insert(keysToInsert[i], jedi);
+  // }
+  // int myInsertSize = hashTable.getSize();
+  // for (int i = 0; i < iters; i++)
+  // {
+  //   hashTable.erase(keysToErase[i]);
+  // }
+  // int myEraseSize = hashTable.getSize();
+  // int myFoundAmount = 0;
+  // for (int i = 0; i < iters; i++)
+  // {
+  //   if (hashTable.find(keysToFind[i]) != nullptr)
+  //   {
+  //     myFoundAmount++;
+  //   }
+  // }
+  // clock_t myEnd = clock();
+  // float myTime = (float(myEnd - myStart)) / CLOCKS_PER_SEC;
+
+  // test STL hash table:
+  // std::unordered_map<long long, Jedi> unorderedMap;
+  // clock_t stlStart = clock();
+  // for (int i = 0; i < iters; i++)
+  // {
+  //   Jedi jedi = Jedi();
+  //   unorderedMap.insert({keysToInsert[i], jedi});
+  // }
+  // int stlInsertSize = unorderedMap.size();
+  // for (int i = 0; i < iters; i++)
+  // {
+  //   unorderedMap.erase(keysToErase[i]);
+  // }
+  // int stlEraseSize = unorderedMap.size();
+  // int stlFoundAmount = 0;
+  // for (int i = 0; i < iters; i++)
+  // {
+  //   if (unorderedMap.find(keysToFind[i]) != unorderedMap.end())
+  //   {
+  //     stlFoundAmount++;
+  //   }
+  // }
+  // clock_t stlEnd = clock();
+  // float stlTime = (float(stlEnd - stlStart)) / CLOCKS_PER_SEC;
+
+  // std::cout << "My HashTable:" << std::endl;
+  // std::cout << "Time: " << myTime << ", size: " << myInsertSize << " - " << myEraseSize << ", found amount: " << myFoundAmount << std::endl;
+  // std::cout << "STL unordered_map:" << std::endl;
+  // std::cout << "Time: " << stlTime << ", size: " << stlInsertSize << " - " << stlEraseSize << ", found amount: " << stlFoundAmount << std::endl
+  //           << std::endl;
+  // delete keys;
+  // delete keysToInsert;
+  // delete keysToErase;
+  // delete keysToFind;
+  // if (myInsertSize == stlInsertSize && myEraseSize == stlEraseSize && myFoundAmount == stlFoundAmount)
+  // {
+  //   std::cout << "The lab is completed" << std::endl;
+  //   return true;
+  // }
+  // std::cerr << ":(" << std::endl;
 }

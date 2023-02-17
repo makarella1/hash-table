@@ -1,8 +1,9 @@
 #include "hashNode.h"
 
-HashNode::HashNode(int keyValue, Jedi jediData)
+template <typename Key>
+HashNode<Key>::HashNode(Key key, Jedi jediData)
 {
   jedi = jediData;
-  key = keyValue;
+  this->key = key;
   next = nullptr;
 }

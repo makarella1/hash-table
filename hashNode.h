@@ -2,11 +2,12 @@
 
 #include "jedi.h"
 
+template <typename Key>
 struct HashNode
 {
   Jedi jedi;
-  int key;
+  Key key;
   HashNode *next;
 
-  HashNode(int keyValue, Jedi jedi);
+  HashNode(Key key, Jedi jedi);
 };

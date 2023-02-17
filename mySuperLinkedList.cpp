@@ -2,20 +2,23 @@
 #include "mySuperLinkedList.h"
 #include "hashNode.h"
 
-MySuperLinkedList::MySuperLinkedList()
+template <typename Key>
+MySuperLinkedList<Key>::MySuperLinkedList()
 {
   head = nullptr;
   size = 0;
 }
 
-bool MySuperLinkedList::isEmpty()
+template <typename Key>
+bool MySuperLinkedList<Key>::isEmpty()
 {
   return head == nullptr;
 }
 
-void MySuperLinkedList::pushFront(HashNode hashNode)
+template <typename Key>
+void MySuperLinkedList<Key>::pushFront(HashNode<Key> hashNode)
 {
-  HashNode *newHead = new HashNode(hashNode);
+  HashNode<Key> *newHead = new HashNode<Key>(hashNode);
 
   newHead->next = head;
 
@@ -24,17 +27,18 @@ void MySuperLinkedList::pushFront(HashNode hashNode)
   ++size;
 }
 
-void MySuperLinkedList::pushBack(HashNode &hashNode)
+template <typename Key>
+void MySuperLinkedList<Key>::pushBack(HashNode<Key> &hashNode)
 {
   if (isEmpty())
   {
-    head = new HashNode(hashNode);
+    head = new HashNode<Key>(hashNode);
   }
   else
   {
-    HashNode *newTail = new HashNode(hashNode);
+    HashNode<Key> *newTail = new HashNode<Key>(hashNode);
 
-    HashNode *current = head;
+    HashNode<Key> *current = head;
 
     while (current->next != nullptr)
     {
@@ -47,7 +51,8 @@ void MySuperLinkedList::pushBack(HashNode &hashNode)
   ++size;
 }
 
-HashNode MySuperLinkedList::get(int index)
+template <typename Key>
+HashNode<Key> MySuperLinkedList<Key>::get(int index)
 {
   if (index <= 0 && index > size)
   {
@@ -55,7 +60,7 @@ HashNode MySuperLinkedList::get(int index)
     exit(1);
   }
 
-  HashNode *current = head;
+  HashNode<Key> *current = head;
 
   for (int i = 0; i < index; i++)
   {
@@ -65,7 +70,8 @@ HashNode MySuperLinkedList::get(int index)
   return *current;
 }
 
-HashNode MySuperLinkedList::popFront()
+template <typename Key>
+HashNode<Key> MySuperLinkedList<Key>::popFront()
 {
   if (isEmpty())
   {
@@ -73,8 +79,8 @@ HashNode MySuperLinkedList::popFront()
     exit(1);
   }
 
-  HashNode *oldHead = head;
-  HashNode result = *head;
+  HashNode<Key> *oldHead = head;
+  HashNode<Key> result = *head;
 
   head = head->next;
 
@@ -85,7 +91,8 @@ HashNode MySuperLinkedList::popFront()
   return result;
 }
 
-HashNode MySuperLinkedList::popBack()
+template <typename Key>
+HashNode<Key> MySuperLinkedList<Key>::popBack()
 {
   if (isEmpty())
   {
@@ -97,14 +104,14 @@ HashNode MySuperLinkedList::popBack()
     return popFront();
   }
 
-  HashNode *current = head;
+  HashNode<Key> *current = head;
 
   while (current->next->next != nullptr)
   {
     current = current->next;
   }
 
-  HashNode result = *(current->next);
+  HashNode<Key> result = *(current->next);
 
   delete current->next;
   current->next = nullptr;
@@ -114,14 +121,16 @@ HashNode MySuperLinkedList::popBack()
   return result;
 }
 
-int MySuperLinkedList::getSize()
+template <typename Key>
+int MySuperLinkedList<Key>::getSize()
 {
   return size;
 }
 
-void MySuperLinkedList::print()
+template <typename Key>
+void MySuperLinkedList<Key>::print()
 {
-  HashNode *current = head;
+  HashNode<Key> *current = head;
 
   while (current != nullptr)
   {
