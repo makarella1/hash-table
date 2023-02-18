@@ -1,22 +1,32 @@
 #include "jedi.h"
 #include "hashNode.h"
-#include "mySuperLinkedList.h"
-
-const int LOAD_FACTOR = 9;
 
 template <typename Key>
 struct HashTable
 {
-private:
-  MySuperLinkedList<Key> *buckets;
-
+  HashNode<Key> **buckets;
   int size;
+  int capacity;
+  double loadFactor;
 
-  int bucketsLength;
+  HashTable(int capacity = 8, double loadFactor = 0.75)
+  {
+    size = 0;
+
+    this->capacity = capacity;
+    this->loadFactor = loadFactor;
+
+    buckets = new HashNode<Key> *[capacity];
+
+    for (int i = 0; i < capacity; i++)
+    {
+      buckets[i] = NULL;
+    }
+  }
 
   int hash(int key)
   {
-    return key % bucketsLength;
+    return key % capacity;
   }
 
   int hash(std::string key)
@@ -26,122 +36,124 @@ private:
     {
       hash += static_cast<int>(c);
     }
-    return hash % bucketsLength;
+    return hash % capacity;
   }
 
-  double loadFactor()
+  void insert(int key, Jedi jedi)
   {
-    return static_cast<double>(size) / bucketsLength;
-  }
-
-  void resize()
-  {
-    int newLength = bucketsLength * 2;
-
-    MySuperLinkedList<Key> *newBuckets = new MySuperLinkedList<Key>[newLength];
-
-    for (int i = 0; i < bucketsLength; i++)
-    {
-      HashNode<Key> *current = buckets[i].head;
-
-      while (current != nullptr)
-      {
-        HashNode<Key> *newNode = new HashNode<Key>(current->key, current->jedi);
-
-        newBuckets[hash(current->key)].pushBack(*newNode);
-        current = current->next;
-      }
-    }
-
-    delete[] buckets;
-    buckets = newBuckets;
-
-    bucketsLength = newLength;
-  }
-
-public:
-  HashTable()
-  {
-    size = 0;
-    bucketsLength = 8;
-    buckets = new MySuperLinkedList<Key>[bucketsLength];
-  }
-
-  void insert(Key key, Jedi &jedi)
-  {
-    if (loadFactor() >= LOAD_FACTOR)
-    {
-      resize();
-    }
-
     int index = hash(key);
 
-    HashNode<Key> *current = buckets[index].head;
+    HashNode<Key> *node = buckets[index];
+    HashNode<Key> *prev = NULL;
 
-    while (current != nullptr)
+    while (node != NULL)
     {
-      if (current->key == key)
+      if (node->key == key)
       {
-        current->jedi = jedi;
+        node->jedi = jedi;
         return;
       }
-      current = current->next;
+      prev = node;
+      node = node->next;
     }
 
     HashNode<Key> *newNode = new HashNode<Key>(key, jedi);
-    buckets[index].pushBack(*newNode);
-    ++size;
+
+    if (prev == NULL)
+    {
+      buckets[index] = newNode;
+    }
+    else
+    {
+      prev->next = newNode;
+    }
+
+    size++;
   }
 
-  Jedi *find(Key key)
+  Jedi *find(int key)
   {
     int index = hash(key);
-    HashNode<Key> *current = buckets[index].head;
 
-    while (current != nullptr)
+    HashNode<Key> *node = buckets[index];
+
+    while (node != NULL)
     {
-      if (current->key == key)
+      if (node->key == key)
       {
-        return &(current->jedi);
+        return &(node->jedi);
       }
-
-      current = current->next;
+      node = node->next;
     }
 
     return NULL;
   }
 
-  void erase(Key key)
+  void erase(int key)
   {
     int index = hash(key);
 
-    HashNode<Key> *current = buckets[index].head;
-    HashNode<Key> *prev = nullptr;
+    HashNode<Key> *prev = NULL;
+    HashNode<Key> *node = buckets[index];
 
-    while (current != nullptr)
+    while (node != NULL)
     {
-      if (current->key == key)
+      if (node->key == key)
       {
-        if (prev == nullptr)
+        if (prev == NULL)
         {
-          buckets[index].popFront();
+          buckets[index] = node->next;
         }
         else
         {
-          prev->next = current->next;
-          delete current;
+          prev->next = node->next;
         }
-        --size;
-        break;
+
+        delete node;
+        size--;
+
+        return;
       }
 
-      prev = current;
-      current = current->next;
+      prev = node;
+      node = node->next;
     }
   }
 
   int getSize()
   {
     return size;
+  }
+
+  void resize()
+  {
+    int newCapacity = capacity * 2;
+
+    HashNode<Key> **newBuckets = new HashNode<Key> *[newCapacity];
+
+    for (int i = 0; i < newCapacity; i++)
+    {
+      newBuckets[i] = NULL;
+    }
+
+    for (int i = 0; i < capacity; i++)
+    {
+      HashNode<Key> *node = buckets[i];
+      while (node != NULL)
+      {
+        int index = node->key % newCapacity;
+
+        HashNode<Key> *next = node->next;
+        node->next = newBuckets[index];
+
+        newBuckets[index] = node;
+        node = next;
+      }
+    }
+
+    delete[] buckets;
+
+    buckets = newBuckets;
+    capacity = newCapacity;
   }
 };

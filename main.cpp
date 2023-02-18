@@ -10,9 +10,9 @@ generateRandLong(int keysAmount);
 
 int main()
 {
-  const int iters = 500000;
+  const int iters = 100000;
   const int keysAmount = iters * 1;
-
+  // generate random keys:
   long long *keys = new long long[keysAmount];
   long long *keysToInsert = new long long[iters];
   long long *keysToErase = new long long[iters];
@@ -27,15 +27,12 @@ int main()
     keysToErase[i] = keys[generateRandLong(keysAmount)];
     keysToFind[i] = keys[generateRandLong(keysAmount)];
   }
-
+  // test my HashTable:
   HashTable<int> hashTable;
-
   clock_t myStart = clock();
   for (int i = 0; i < iters; i++)
   {
-    Jedi jedi = Jedi();
-
-    hashTable.insert(keysToInsert[i], jedi);
+    hashTable.insert(keysToInsert[i], Jedi());
   }
   int myInsertSize = hashTable.getSize();
   for (int i = 0; i < iters; i++)
@@ -46,21 +43,19 @@ int main()
   int myFoundAmount = 0;
   for (int i = 0; i < iters; i++)
   {
-    if (hashTable.find(keysToFind[i]) != nullptr)
+    if (hashTable.find(keysToFind[i]) != NULL)
     {
       myFoundAmount++;
     }
   }
   clock_t myEnd = clock();
   float myTime = (float(myEnd - myStart)) / CLOCKS_PER_SEC;
-
-  // test STL hash table :
+  // test STL hash table:
   std::unordered_map<long long, Jedi> unorderedMap;
   clock_t stlStart = clock();
   for (int i = 0; i < iters; i++)
   {
-    Jedi jedi = Jedi();
-    unorderedMap.insert({keysToInsert[i], jedi});
+    unorderedMap.insert({keysToInsert[i], Jedi()});
   }
   int stlInsertSize = unorderedMap.size();
   for (int i = 0; i < iters; i++)
@@ -78,7 +73,6 @@ int main()
   }
   clock_t stlEnd = clock();
   float stlTime = (float(stlEnd - stlStart)) / CLOCKS_PER_SEC;
-
   std::cout << "My HashTable:" << std::endl;
   std::cout << "Time: " << myTime << ", size: " << myInsertSize << " - " << myEraseSize << ", found amount: " << myFoundAmount << std::endl;
   std::cout << "STL unordered_map:" << std::endl;
@@ -94,10 +88,10 @@ int main()
     return true;
   }
   std::cerr << ":(" << std::endl;
+  return false;
 }
 
-long long
-generateRandLong(int keysAmount)
+long long generateRandLong(int keysAmount)
 {
   std::random_device rd;
   std::mt19937_64 generator(rd());
