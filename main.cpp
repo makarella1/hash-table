@@ -3,6 +3,7 @@
 #include <random>
 #include "jedi.h"
 #include "hashTable.h"
+#include "openAddressingHashTable.h"
 #include <unordered_map>
 
 long long
@@ -10,7 +11,7 @@ generateRandLong(int keysAmount);
 
 int main()
 {
-  const int iters = 100000;
+  const int iters = 1000;
   const int keysAmount = iters * 1;
   // generate random keys:
   long long *keys = new long long[keysAmount];

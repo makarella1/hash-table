@@ -39,7 +39,7 @@ struct HashTable
     return hash % capacity;
   }
 
-  void insert(int key, Jedi jedi)
+  void insert(Key key, Jedi jedi)
   {
     int index = hash(key);
 
@@ -71,7 +71,7 @@ struct HashTable
     size++;
   }
 
-  Jedi *find(int key)
+  Jedi *find(Key key)
   {
     int index = hash(key);
 
@@ -89,7 +89,7 @@ struct HashTable
     return NULL;
   }
 
-  void erase(int key)
+  void erase(Key key)
   {
     int index = hash(key);
 
